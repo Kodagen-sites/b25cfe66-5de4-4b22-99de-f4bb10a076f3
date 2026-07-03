@@ -1,0 +1,26 @@
+[
+  { "slot": "section-hero", "keyword": "artisan sourdough bread bakery rustic", "orientation": "landscape", "w": 2400, "h": 1350 },
+  { "slot": "section-about", "keyword": "baker hands kneading dough flour", "orientation": "landscape", "w": 1600, "h": 1200 },
+  { "slot": "section-about-2", "keyword": "vintage bakery interior wood counter", "orientation": "landscape", "w": 1600, "h": 1200 },
+  { "slot": "section-cta", "keyword": "fresh baked bread loaves display", "orientation": "landscape", "w": 2000, "h": 1000 },
+  { "slot": "section-og", "keyword": "artisan bakery sourdough crust", "orientation": "landscape", "w": 1200, "h": 630 },
+
+  { "slot": "service-breads", "keyword": "sourdough loaf artisan crust scored", "orientation": "portrait", "w": 1000, "h": 1250 },
+  { "slot": "service-pastries", "keyword": "croissant viennoiserie pastry butter", "orientation": "portrait", "w": 1000, "h": 1250 },
+  { "slot": "service-cakes", "keyword": "custom celebration layer cake elegant", "orientation": "portrait", "w": 1000, "h": 1250 },
+  { "slot": "service-ordering", "keyword": "bakery paper bag bread pickup counter", "orientation": "portrait", "w": 1000, "h": 1250 },
+
+  { "slot": "product-sourdough", "keyword": "round sourdough boule loaf top", "orientation": "squarish", "w": 900, "h": 900 },
+  { "slot": "product-baguette", "keyword": "french baguette crusty bread", "orientation": "squarish", "w": 900, "h": 900 },
+  { "slot": "product-croissant", "keyword": "butter croissant golden flaky", "orientation": "squarish", "w": 900, "h": 900 },
+  { "slot": "product-danish", "keyword": "fruit danish pastry glazed", "orientation": "squarish", "w": 900, "h": 900 },
+  { "slot": "product-cake", "keyword": "celebration cake slice frosting", "orientation": "squarish", "w": 900, "h": 900 },
+  { "slot": "product-cookies", "keyword": "chocolate chip cookies rustic", "orientation": "squarish", "w": 900, "h": 900 },
+
+  { "slot": "gallery-1", "keyword": "sourdough scoring pattern crust closeup", "orientation": "squarish", "w": 1000, "h": 1000 },
+  { "slot": "gallery-2", "keyword": "croissants tray fresh baked", "orientation": "landscape", "w": 1400, "h": 1000 },
+  { "slot": "gallery-3", "keyword": "wedding tiered cake floral", "orientation": "portrait", "w": 1000, "h": 1400 },
+  { "slot": "gallery-4", "keyword": "baker dusting flour dough workshop", "orientation": "landscape", "w": 1400, "h": 1000 },
+  { "slot": "gallery-5", "keyword": "cinnamon roll pastry glaze", "orientation": "squarish", "w": 1000, "h": 1000 },
+  { "slot": "gallery-6", "keyword": "bread basket assortment rustic table", "orientation": "landscape", "w": 1400, "h": 1000 }
+]

@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-bg text-cream font-body antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: theme("colors.primary");
+    color: theme("colors.ink");
+  }
+}
+
+@layer utilities {
+  .section-pad {
+    padding-block: clamp(48px, 6vw, 96px);
+  }
+  .container-pad {
+    padding-inline: clamp(20px, 5vw, 48px);
+  }
+}
