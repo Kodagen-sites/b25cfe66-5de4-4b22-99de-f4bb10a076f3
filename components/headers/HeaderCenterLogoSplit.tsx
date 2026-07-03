@@ -9,6 +9,7 @@ import { siteConfig } from "@/content/site-config";
 import { NAV_LINKS } from "./nav-links";
 import { useIsMobile, useScrollState } from "./hooks";
 import { CartIcon } from "@/components/cart/CartIcon";
+import { AccountAuthLinks } from "@/components/AccountAuthLinks";
 
 /**
  * Header #19 — CENTER LOGO + SPLIT NAV
@@ -114,6 +115,7 @@ export default function HeaderCenterLogoSplit() {
                   </Link>
                 );
               })}
+              <AccountAuthLinks variant="pill" />
               <CartIcon className="text-white/80 hover:text-white" />
             </nav>
           ) : (
@@ -166,6 +168,9 @@ function MobileOverlay({ onClose }: { onClose: () => void }) {
           </motion.li>
         ))}
       </ul>
+      <div className="px-6 mt-4 flex flex-col items-center gap-2 text-white">
+        <AccountAuthLinks variant="stacked" />
+      </div>
     </motion.div>
   );
 }

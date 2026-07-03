@@ -16,13 +16,21 @@
     "test:visual": "playwright test"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.110.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.38.0",
     "gsap": "^3.12.5",
     "lucide-react": "^0.460.0",
     "next": "^16.2.4",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "resend": "^4.8.0",
+    "sonner": "^1.7.4",
+    "stripe": "^17.7.0",
+    "tailwind-merge": "^2.6.1",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@babel/core": "^7.25.0",

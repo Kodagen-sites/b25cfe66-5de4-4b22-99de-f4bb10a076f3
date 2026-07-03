@@ -9,6 +9,8 @@ import { siteConfig as content } from "@/content/site-config";
 
 export const siteConfig = {
   ...content,
+  // Admin engine id — catalog (products + orders) for this bakery storefront.
+  engine: "catalog",
   contact: {
     email: content.company.email,
     phone: content.company.phone,
@@ -22,3 +24,9 @@ export const siteConfig = {
 
 export type SiteConfig = typeof siteConfig;
 export default siteConfig;
+
+// Async accessor used by admin server components that expect a Promise-returning
+// config loader (parity with the DB-backed loader on dynamic tenants).
+export async function getSiteConfig() {
+  return siteConfig;
+}
