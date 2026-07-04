@@ -1,7 +1,10 @@
 // proxy.ts — Next.js 16 successor to middleware.ts
 //
 // Gates /admin/* routes. Unauthenticated requests are redirected to
-// /admin/login. Public routes pass through unchanged.
+// /admin/login; accounts still carrying the provisioning-set
+// must_change_password flag are locked to /admin/change-password until
+// they rotate the generated credential. Public routes pass through
+// unchanged.
 
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
@@ -50,6 +53,27 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin";
     return NextResponse.redirect(url);
+  }
+
+  // Generated-password accounts can't use the admin (pages or server
+  // actions — both route through here) until they set their own password.
+  // getUser() reads metadata from the auth server, so the flag can't be
+  // spoofed by editing cookies.
+  if (isAdminRoute && user && !isAuthCallback) {
+    const mustChange = Boolean(user.user_metadata?.must_change_password);
+    const isChangePassword = pathname.startsWith("/admin/change-password");
+    if (mustChange && !isChangePassword) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/change-password";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+    if (!mustChange && isChangePassword) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
   }
 
   return response;

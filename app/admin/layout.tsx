@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { getCurrentSite } from "@/lib/site-scope";
 import { ROLE_DEFAULTS, type Role } from "@/lib/audit";
 import { AdminRoleProvider } from "./role-context";
-import ForcePasswordChange from "@/components/admin/ForcePasswordChange";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -40,9 +39,6 @@ export default async function AdminLayout({
       permissions={permissions}
       masking={masking}
     >
-      {/* Blocking first-login password rotation — renders nothing once the
-          provisioning-set must_change_password flag is cleared. */}
-      <ForcePasswordChange />
       {children}
     </AdminRoleProvider>
   );
