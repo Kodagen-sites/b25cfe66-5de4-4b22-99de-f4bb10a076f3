@@ -1,4 +1,4 @@
-import { FK_COL } from '@/lib/db-scope';
+import { FK_COL, KODAGEN_SCHEMA, withSchema } from '@/lib/db-scope';
 import { Resend } from "resend";
 import { createServiceClient } from "@/lib/supabase/server";
 
@@ -34,12 +34,12 @@ export async function sendEmail(
       .eq(FK_COL, siteId)
       .eq("kind", "email")
       .maybeSingle(),
-    supabase
+    withSchema(supabase, KODAGEN_SCHEMA)
       .from("sites")
       .select("name")
       .eq("id", siteId)
       .maybeSingle(),
-    supabase
+    withSchema(supabase, KODAGEN_SCHEMA)
       .from("site_settings")
       .select("business_name, primary_email")
       .eq(FK_COL, siteId)

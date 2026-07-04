@@ -1,4 +1,4 @@
-import { FK_COL } from '@/lib/db-scope';
+import { FK_COL, KODAGEN_SCHEMA, withSchema } from '@/lib/db-scope';
 import { NextResponse, type NextRequest } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email/send";
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = createServiceClient();
-  const { data: site } = await supabase
+  const { data: site } = await withSchema(supabase, KODAGEN_SCHEMA)
     .from("sites")
     .select("id, name, status")
     .eq("slug", slug)
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
 
   // Load site settings for email/brand info + check payment providers in parallel
   const [{ data: settings }, { data: paymentProviders }] = await Promise.all([
-    supabase.from("site_settings").select("business_name, primary_email").eq(FK_COL, siteId).maybeSingle(),
+    withSchema(supabase, KODAGEN_SCHEMA).from("site_settings").select("business_name, primary_email").eq(FK_COL, siteId).maybeSingle(),
     supabase.from("integrations_config").select("kind").eq(FK_COL, siteId).eq("enabled", true).in("kind", ["paystack", "stripe"]).limit(1),
   ]);
 

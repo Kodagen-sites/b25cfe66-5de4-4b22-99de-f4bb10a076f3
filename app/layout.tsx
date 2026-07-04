@@ -3,13 +3,6 @@ import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 import { siteConfig } from "@/content/site-config";
-import Header from "@/components/headers/Header";
-import Footer from "@/components/Footer";
-import FilmGrain from "@/components/motion/FilmGrain";
-import Vignette from "@/components/motion/Vignette";
-import { CartProvider } from "@/components/cart/CartContext";
-import { CartFlow } from "@/components/cart/CartFlow";
-import EditorBridge from "@/components/__kodagen/EditorBridge";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -66,6 +59,8 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
+// Bare shell only — the public site's chrome (header/footer/cart/film
+// overlays) lives in app/(site)/layout.tsx so /admin doesn't inherit it.
 export default function RootLayout({
   children,
 }: {
@@ -77,15 +72,7 @@ export default function RootLayout({
       className={`${fraunces.variable} ${inter.variable} ${jetbrains.variable}`}
     >
       <body className="bg-bg text-cream font-body antialiased overflow-x-hidden">
-        <CartProvider brandSlug={siteConfig.slug} currency={siteConfig.currency}>
-          <Header />
-          <CartFlow />
-          <main>{children}</main>
-          <Footer />
-        </CartProvider>
-        <Vignette />
-        <FilmGrain />
-        <EditorBridge />
+        {children}
       </body>
     </html>
   );

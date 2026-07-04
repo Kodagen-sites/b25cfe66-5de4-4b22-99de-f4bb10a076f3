@@ -43,7 +43,9 @@ export async function getScopeId(supabase?: any): Promise<string> {
 
   const { createServiceClient } = await import('@/lib/supabase/server');
   const client = supabase ?? createServiceClient();
-  const { data } = await client
+  // Shared-mode sites live in the `kodagen` schema — querying the default
+  // (public) schema silently resolves to '' and locks every admin out.
+  const { data } = await withSchema(client, KODAGEN_SCHEMA)
     .from('sites')
     .select('id')
     .eq('slug', SITE_SLUG_ENV)

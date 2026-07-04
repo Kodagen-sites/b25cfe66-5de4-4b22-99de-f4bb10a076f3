@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { cache } from 'react';
 import { createServiceClient } from '@/lib/supabase/server';
-import { FK_COL, DB_MODE, getScopeId } from '@/lib/db-scope';
+import { FK_COL, DB_MODE, getScopeId, KODAGEN_SCHEMA, withSchema } from '@/lib/db-scope';
 import { siteConfig } from '@/lib/site-config';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? '';
@@ -35,7 +35,7 @@ export const getSiteDefaults = cache(async function (): Promise<SiteDefaults> {
     // since site_settings may not exist for older sites.
     let businessNameFallback = siteConfig.company?.name ?? 'Business';
     if (DB_MODE === 'shared') {
-      const { data: site } = await supabase
+      const { data: site } = await withSchema(supabase, KODAGEN_SCHEMA)
         .from('sites')
         .select('name')
         .eq('slug', SLUG)
@@ -43,7 +43,7 @@ export const getSiteDefaults = cache(async function (): Promise<SiteDefaults> {
       if (site?.name) businessNameFallback = site.name as string;
     }
 
-    const { data: settings } = await supabase
+    const { data: settings } = await withSchema(supabase, KODAGEN_SCHEMA)
       .from('site_settings')
       .select('business_name, default_meta_title, default_meta_description, default_og_image_url')
       .eq(FK_COL, scopeId)
