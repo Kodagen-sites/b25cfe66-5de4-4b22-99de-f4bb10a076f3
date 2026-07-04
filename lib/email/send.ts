@@ -5,11 +5,11 @@ import { createServiceClient } from "@/lib/supabase/server";
 /**
  * Send a transactional email from a site. Uses:
  *   1. Customer's own Resend API key (if they added one in Integrations), OR
- *   2. Kodagen's managed key from RESEND_API_KEY env var
+ *   2. A customer-provided RESEND_API_KEY env var (feature gate), OR
+ *   3. The Kodagen platform email proxy (KODAGEN_PROXY_URL + site token) —
+ *      the platform's master Resend key never ships in this deployment.
  *
  * Sender name = the site's businessName. Reply-to = the site's contact email.
- * From address = noreply@kodagen.com (managed domain) or the customer's
- * verified domain if they provide their own key.
  */
 export async function sendEmail(
   siteId: string,
@@ -54,15 +54,48 @@ export async function sendEmail(
     if (integration?.enabled && typeof cfg.api_key === "string" && cfg.api_key.startsWith("re_")) {
       return cfg.api_key;
     }
-    // Fall back to Kodagen's managed key
+    // A key the customer supplied via the feature gate (host-written env)
     return process.env.RESEND_API_KEY ?? "";
   })();
 
-  if (!apiKey) {
-    return { ok: false, error: "No email API key configured. Add RESEND_API_KEY to .env.local or enable the Email integration." };
+  const fromName = opts.fromName ?? (settings?.business_name as string | undefined) ?? (site?.name as string) ?? "Kodagen";
+
+  // No customer key → managed sending via the platform proxy. The proxy holds
+  // the master key, applies per-site rate limits, and sends from the managed
+  // domain with this site's business name.
+  const proxyUrl = process.env.KODAGEN_PROXY_URL;
+  const siteToken = process.env.KODAGEN_SITE_TOKEN;
+  if (!apiKey && proxyUrl && siteToken) {
+    const toAddresses = Array.isArray(opts.to) ? opts.to : [opts.to];
+    const replyToAddr = opts.replyTo ?? (contactEmail || undefined);
+    try {
+      let lastError = "";
+      let lastId: string | undefined;
+      for (const to of toAddresses) {
+        const r = await fetch(`${proxyUrl.replace(/\/$/, "")}/email`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${siteToken}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ to, subject: opts.subject, html: opts.html, replyTo: replyToAddr, fromName }),
+        });
+        const json = (await r.json()) as { ok?: boolean; id?: string; error?: string };
+        if (!r.ok || !json.ok) lastError = json.error ?? `proxy ${r.status}`;
+        else lastId = json.id;
+      }
+      if (lastError) {
+        console.error("[email] proxy send failed:", lastError);
+        return { ok: false, error: lastError };
+      }
+      return { ok: true, id: lastId };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error("[email] proxy exception:", msg);
+      return { ok: false, error: msg };
+    }
   }
 
-  const fromName = opts.fromName ?? (settings?.business_name as string | undefined) ?? (site?.name as string) ?? "Kodagen";
+  if (!apiKey) {
+    return { ok: false, error: "No email configured. Enable the Email integration or contact support." };
+  }
   // Sending domain priority:
   //   1. Customer's own domain (from their Email integration config)
   //   2. Kodagen's managed domain (RESEND_FROM_DOMAIN env)

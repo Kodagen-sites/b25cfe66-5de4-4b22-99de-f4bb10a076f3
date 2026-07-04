@@ -1,5 +1,5 @@
 'use server';
-import { FK_COL } from '@/lib/db-scope';
+import { FK_COL, KODAGEN_SCHEMA, withSchema } from '@/lib/db-scope';
 import Anthropic from '@anthropic-ai/sdk';
 import { createServiceClient } from '@/lib/supabase/server';
 import { getCurrentSite } from '@/lib/site-scope';
@@ -101,7 +101,7 @@ export async function regenerateCopy({
   const supabase = createServiceClient();
   
   // Load context
-  const { data: settings } = await supabase
+  const { data: settings } = await withSchema(supabase, KODAGEN_SCHEMA)
     .from('site_settings')
     .select('voice_family,business_name,industry_classification,hero_headline,hero_subhead,brand_narrative,footer_statement')
     .eq(FK_COL, tenantId)
@@ -158,30 +158,48 @@ Return ONLY a JSON array, no preamble, no markdown fences:
   { "alternative": "...", "reasoning": "..." }
 ]`;
   
-  // Call Claude API
+  // Call the AI. Preferred path: the Kodagen platform proxy (site-scoped
+  // token — no master API key ever lives in this deployment). Fallback:
+  // a customer-provided ANTHROPIC_API_KEY, for self-hosted setups.
+  const proxyUrl = process.env.KODAGEN_PROXY_URL;
+  const siteToken = process.env.KODAGEN_SITE_TOKEN;
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return { success: false, error: 'AI editor not configured. Set ANTHROPIC_API_KEY.' };
+  if (!proxyUrl || !siteToken) {
+    if (!apiKey) {
+      return { success: false, error: 'AI editor not configured.' };
+    }
   }
-  
-  const anthropic = new Anthropic({ apiKey });
-  
+
   let alternatives: Array<{ alternative: string; reasoning: string }> = [];
-  
+
   try {
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userRequest }],
-    });
-    
-    const textBlock = response.content.find(b => b.type === 'text');
-    const text = textBlock && textBlock.type === 'text' ? textBlock.text : '';
-    
+    let text = '';
+    if (proxyUrl && siteToken) {
+      const r = await fetch(`${proxyUrl.replace(/\/$/, '')}/ai-copy`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${siteToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ system: systemPrompt, user: userRequest, maxTokens: 1024 }),
+      });
+      const json = (await r.json()) as { ok?: boolean; text?: string; error?: string };
+      if (!r.ok || !json.ok) {
+        return { success: false, error: json.error ?? 'AI service error. Try again in a moment.' };
+      }
+      text = json.text ?? '';
+    } else {
+      const anthropic = new Anthropic({ apiKey });
+      const response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1024,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userRequest }],
+      });
+      const textBlock = response.content.find(b => b.type === 'text');
+      text = textBlock && textBlock.type === 'text' ? textBlock.text : '';
+    }
+
     const cleaned = text.replace(/```json\s*|\s*```/g, '').trim();
     alternatives = JSON.parse(cleaned);
-    
+
     if (!Array.isArray(alternatives) || alternatives.length === 0) {
       return { success: false, error: 'AI returned an unexpected response. Try rephrasing.' };
     }
